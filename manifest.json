@@ -20,7 +20,7 @@
     "type": "module"
   },
   "action": {
-    "default_popup": "popup.html"
+    "default_popup": "pages/popup.html"
   },
   "content_scripts": [
     {
@@ -31,8 +31,20 @@
   ],
   "web_accessible_resources": [
     {
-      "resources": ["floating.html", "index.html", "jszip.min.js", "wacz_engine.js", "conversion_engine.js", "db.js"],
+      "resources": [
+        "pages/floating.html", 
+        "pages/index.html", 
+        "libs/jszip.min.js", 
+        "engines/wacz_engine.js", 
+        "engines/conversion_engine.js", 
+        "engines/db.js"
+      ],
       "matches": ["<all_urls>"]
     }
-  ]
+  ],
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  }
 }

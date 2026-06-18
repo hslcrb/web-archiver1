@@ -5,7 +5,7 @@
     root.id = 'web-archiver-root';
     const shadow = root.attachShadow({ mode: 'closed' });
     const iframe = document.createElement('iframe');
-    iframe.src = chrome.runtime.getURL('floating.html');
+    iframe.src = chrome.runtime.getURL('pages/floating.html');
     iframe.style.cssText = 'position:fixed;bottom:20px;right:20px;width:150px;height:50px;border:none;z-index:2147483647;pointer-events:none;';
     shadow.appendChild(iframe);
     document.body.appendChild(root);

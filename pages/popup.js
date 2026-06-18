@@ -34,7 +34,7 @@ stopBtn.addEventListener('click', () => {
 });
 
 exportBtn.addEventListener('click', () => {
-  chrome.tabs.create({ url: 'index.html' });
+  chrome.tabs.create({ url: 'pages/index.html' });
 });
 
 setInterval(updateUI, 1000);

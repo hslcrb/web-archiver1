@@ -1,4 +1,4 @@
-import { getAllFromDB } from './db.js';
+import { getAllFromDB } from '../engines/db.js';
 
 let currentData = {
   requests: [],
