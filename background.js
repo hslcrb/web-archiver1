@@ -70,13 +70,12 @@ chrome.debugger.onEvent.addListener((source, method, params) => {
     saveToDB("requests", req);
     requestCount++;
   } else if (method === "Network.loadingFinished") {
-    chrome.debugger.sendCommand(source, "Network.getResponseBody", { requestId: params.requestId }, (result) => {
+    chrome.debugger.sendCommand(source, "Network.getResponseBody", { requestId: params.requestId }, async (result) => {
       if (chrome.runtime.lastError || !result) return;
       
-      // 기존 데이터를 가져와서 body 추가 후 다시 저장
-      // 최적화를 위해 IndexedDB의 일부분만 업데이트하는 방식이 좋으나 여기서는 put으로 처리
-      const transaction = indexedDB.open("WebArchiverDB").onsuccess = (e) => {
-        const db = e.target.result;
+      // db.js의 함수를 사용하여 body 업데이트
+      try {
+        const db = await initDB();
         const tx = db.transaction("requests", "readwrite");
         const store = tx.objectStore("requests");
         const getReq = store.get(params.requestId);
@@ -88,7 +87,9 @@ chrome.debugger.onEvent.addListener((source, method, params) => {
             store.put(data);
           }
         };
-      };
+      } catch (e) {
+        console.error("Error updating response body:", e);
+      }
     });
   }
 });

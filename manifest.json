@@ -31,7 +31,7 @@
   ],
   "web_accessible_resources": [
     {
-      "resources": ["floating.html", "index.html", "libs/*"],
+      "resources": ["floating.html", "index.html", "jszip.min.js", "wacz_engine.js", "conversion_engine.js", "db.js"],
       "matches": ["<all_urls>"]
     }
   ]
