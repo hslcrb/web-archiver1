@@ -48,3 +48,5 @@ async function clearDB() {
   tx.objectStore(STORE_REQUESTS).clear();
   tx.objectStore(STORE_SNAPSHOTS).clear();
 }
+
+export { initDB, saveToDB, clearDB, getAllFromDB };
