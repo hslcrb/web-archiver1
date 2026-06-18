@@ -16,6 +16,7 @@ class WACZPlayer {
   initUI() {
     this.elements = {
       fileInput: document.getElementById('fileInput'),
+      loadFileBtn: document.getElementById('loadFileBtn'),
       loading: document.getElementById('loading'),
       sidebar: document.getElementById('sidebar'),
       contentArea: document.getElementById('contentArea'),
@@ -28,18 +29,78 @@ class WACZPlayer {
       backBtn: document.getElementById('backBtn'),
       forwardBtn: document.getElementById('forwardBtn'),
       toggleSidebar: document.getElementById('toggleSidebar'),
-      goBtn: document.getElementById('goBtn')
+      goBtn: document.getElementById('goBtn'),
+      dropZone: document.getElementById('dropZone')
     };
   }
   
   bindEvents() {
+    // 파일 입력 이벤트
     this.elements.fileInput.addEventListener('change', (e) => this.loadFile(e));
+    
+    // 파일 열기 버튼
+    this.elements.loadFileBtn.addEventListener('click', () => {
+      this.elements.fileInput.click();
+    });
+    
+    // 드래그 앤 드롭 이벤트
+    this.setupDragAndDrop();
+    
+    // 네비게이션 이벤트
     this.elements.toggleSidebar.addEventListener('click', () => this.toggleSidebar());
     this.elements.backBtn.addEventListener('click', () => this.navigateBack());
     this.elements.forwardBtn.addEventListener('click', () => this.navigateForward());
     this.elements.goBtn.addEventListener('click', () => this.navigateToURL());
     this.elements.urlBar.addEventListener('keypress', (e) => {
       if (e.key === 'Enter') this.navigateToURL();
+    });
+  }
+  
+  setupDragAndDrop() {
+    const dropZone = this.elements.dropZone;
+    const contentArea = this.elements.contentArea;
+    
+    // 드래그 오버 이벤트
+    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+      dropZone.addEventListener(eventName, (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+      });
+      
+      contentArea.addEventListener(eventName, (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+      });
+    });
+    
+    // 드래그 엔터
+    ['dragenter', 'dragover'].forEach(eventName => {
+      dropZone.addEventListener(eventName, () => {
+        dropZone.classList.add('drag-over');
+      });
+    });
+    
+    // 드래그 리브
+    ['dragleave', 'drop'].forEach(eventName => {
+      dropZone.addEventListener(eventName, () => {
+        dropZone.classList.remove('drag-over');
+      });
+    });
+    
+    // 드롭 이벤트
+    dropZone.addEventListener('drop', (e) => {
+      const files = e.dataTransfer.files;
+      if (files.length > 0) {
+        this.loadFileFromDrop(files[0]);
+      }
+    });
+    
+    // 전체 영역에도 드롭 적용 (파일이 로드된 후)
+    contentArea.addEventListener('drop', (e) => {
+      const files = e.dataTransfer.files;
+      if (files.length > 0) {
+        this.loadFileFromDrop(files[0]);
+      }
     });
   }
   
@@ -56,6 +117,26 @@ class WACZPlayer {
     const file = event.target.files[0];
     if (!file) return;
     
+    await this.processFile(file);
+  }
+  
+  async loadFileFromDrop(file) {
+    if (!file) return;
+    
+    // 파일 타입 체크
+    const validTypes = ['.wacz', '.zip'];
+    const fileName = file.name.toLowerCase();
+    const isValid = validTypes.some(type => fileName.endsWith(type));
+    
+    if (!isValid) {
+      alert('WACZ 또는 ZIP 파일만 지원됩니다.');
+      return;
+    }
+    
+    await this.processFile(file);
+  }
+  
+  async processFile(file) {
     this.showLoading(true);
     this.elements.statusText.textContent = '파일 로딩 중...';
     
