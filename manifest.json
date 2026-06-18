@@ -1,0 +1,37 @@
+{
+  "manifest_version": 3,
+  "name": "Web Archiver Pro",
+  "version": "1.0.0",
+  "description": "완벽한 웹 브라우징 아카이빙 도구 (WACZ & ZIP 내보내기)",
+  "permissions": [
+    "debugger",
+    "storage",
+    "tabs",
+    "activeTab",
+    "scripting",
+    "downloads",
+    "webNavigation"
+  ],
+  "host_permissions": [
+    "<all_urls>"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_popup": "popup.html"
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content.js"],
+      "run_at": "document_start"
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": ["floating.html", "index.html", "libs/*"],
+      "matches": ["<all_urls>"]
+    }
+  ]
+}
