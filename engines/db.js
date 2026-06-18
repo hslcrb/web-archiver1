@@ -44,9 +44,18 @@ async function getAllFromDB(storeName) {
 
 async function clearDB() {
   const db = await initDB();
-  const tx = db.transaction([STORE_REQUESTS, STORE_SNAPSHOTS], "readwrite");
-  tx.objectStore(STORE_REQUESTS).clear();
-  tx.objectStore(STORE_SNAPSHOTS).clear();
+  return new Promise((resolve, reject) => {
+    try {
+      const tx = db.transaction([STORE_REQUESTS, STORE_SNAPSHOTS], "readwrite");
+      const requestsClear = tx.objectStore(STORE_REQUESTS).clear();
+      const snapshotsClear = tx.objectStore(STORE_SNAPSHOTS).clear();
+      
+      tx.oncomplete = () => resolve();
+      tx.onerror = (e) => reject(e.target.error);
+    } catch (e) {
+      reject(e);
+    }
+  });
 }
 
 export { initDB, saveToDB, clearDB, getAllFromDB };

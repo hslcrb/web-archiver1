@@ -75,13 +75,23 @@
   });
 
   exportBtn.addEventListener('click', () => {
-    chrome.runtime.sendMessage({ action: "OPEN_MANAGER" }, () => {
-      // 관리 페이지 열기
-    });
-    
-    // 확장 프로그램 페이지 열기
-    if (chrome.runtime && chrome.runtime.getURL) {
-      window.open(chrome.runtime.getURL('pages/index.html'), '_blank');
+    // 확장 프로그램 컨텍스트 확인
+    if (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.getURL) {
+      try {
+        const url = chrome.runtime.getURL('pages/index.html');
+        // parent window에서 열기 시도
+        if (window.parent && window.parent !== window) {
+          window.parent.open(url, '_blank');
+        } else {
+          window.open(url, '_blank');
+        }
+      } catch (e) {
+        console.error('페이지 열기 실패:', e);
+        alert('데이터 관리 페이지를 열 수 없습니다. 확장 프로그램 아이콘을 클릭하여 접근하세요.');
+      }
+    } else {
+      console.warn('Chrome runtime API를 사용할 수 없습니다.');
+      alert('확장 프로그램 컨텍스트에서만 작동합니다.');
     }
   });
 

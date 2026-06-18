@@ -65,10 +65,35 @@ chrome.debugger.onEvent.addListener((source, method, params) => {
       method: params.request.method,
       headers: params.request.headers,
       timestamp: params.wallTime * 1000,
-      type: params.type
+      type: params.type,
+      // response 플래그 추가
+      hasResponse: false
     };
     saveToDB("requests", req);
     requestCount++;
+  } else if (method === "Network.responseReceived") {
+    // 응답 헤더 정보 저장
+    (async () => {
+      try {
+        const db = await initDB();
+        const tx = db.transaction("requests", "readwrite");
+        const store = tx.objectStore("requests");
+        const getReq = store.get(params.requestId);
+        getReq.onsuccess = () => {
+          const data = getReq.result;
+          if (data) {
+            data.statusCode = params.response.status;
+            data.statusText = params.response.statusText;
+            data.responseHeaders = params.response.headers;
+            data.mimeType = params.response.mimeType;
+            data.hasResponse = true;
+            store.put(data);
+          }
+        };
+      } catch (e) {
+        console.error("Error updating response headers:", e);
+      }
+    })();
   } else if (method === "Network.loadingFinished") {
     chrome.debugger.sendCommand(source, "Network.getResponseBody", { requestId: params.requestId }, async (result) => {
       if (chrome.runtime.lastError || !result) return;
@@ -84,6 +109,7 @@ chrome.debugger.onEvent.addListener((source, method, params) => {
           if (data) {
             data.body = result.body;
             data.base64Encoded = result.base64Encoded;
+            data.hasResponse = true;
             store.put(data);
           }
         };
