@@ -33,7 +33,9 @@
     {
       "resources": [
         "pages/floating.html", 
+        "pages/floating.js",
         "pages/index.html", 
+        "pages/player.html",
         "libs/jszip.min.js", 
         "engines/wacz_engine.js", 
         "engines/conversion_engine.js", 

@@ -1,23 +1,31 @@
 <!DOCTYPE html>
 <html>
 <head>
+  <meta charset="UTF-8">
   <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { 
+      font-family: sans-serif; 
+      width: 200px;
+      background: transparent;
+    }
     #archiver-float {
-      position: fixed;
-      bottom: 20px;
-      right: 20px;
-      background: rgba(0,0,0,0.8);
+      background: rgba(0,0,0,0.9);
       color: white;
-      padding: 10px;
+      padding: 12px;
       border-radius: 8px;
-      z-index: 999999;
-      font-family: sans-serif;
       font-size: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+      pointer-events: auto;
+      cursor: move;
+    }
+    .header {
       display: flex;
       align-items: center;
-      gap: 10px;
-      box-shadow: 0 4px 6px rgba(0,0,0,0.3);
-      pointer-events: none;
+      gap: 8px;
+      margin-bottom: 10px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid rgba(255,255,255,0.2);
     }
     .rec-dot {
       width: 10px;
@@ -25,15 +33,81 @@
       background: red;
       border-radius: 50%;
       animation: blink 1s infinite;
+      flex-shrink: 0;
     }
-    @keyframes blink { 0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; } }
+    @keyframes blink { 
+      0%, 100% { opacity: 1; } 
+      50% { opacity: 0.3; } 
+    }
+    .status {
+      flex: 1;
+      font-weight: bold;
+      font-size: 11px;
+    }
+    .stats {
+      margin-bottom: 8px;
+      font-size: 11px;
+      color: #aaa;
+    }
+    .controls {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+    .btn {
+      padding: 6px 10px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 11px;
+      font-weight: 600;
+      transition: all 0.2s;
+    }
+    .btn-stop {
+      background: #f44336;
+      color: white;
+    }
+    .btn-stop:hover {
+      background: #d32f2f;
+    }
+    .btn-export {
+      background: #2196F3;
+      color: white;
+    }
+    .btn-export:hover {
+      background: #1976D2;
+    }
+    .btn:active {
+      transform: scale(0.95);
+    }
+    .recording .btn-stop { display: block; }
+    .recording .btn-start { display: none; }
+    .stopped .btn-stop { display: none; }
+    .stopped .btn-start { display: block; }
+    .btn-start {
+      background: #4CAF50;
+      color: white;
+    }
+    .btn-start:hover {
+      background: #45a049;
+    }
   </style>
 </head>
 <body>
   <div id="archiver-float">
-    <div class="rec-dot"></div>
-    <span>REC</span>
-    <span id="req-count">0</span>
+    <div class="header">
+      <div class="rec-dot" id="recDot"></div>
+      <div class="status" id="statusText">REC</div>
+    </div>
+    <div class="stats">
+      <div>요청: <span id="req-count">0</span>개</div>
+    </div>
+    <div class="controls recording" id="controls">
+      <button class="btn btn-stop" id="stopBtn">녹화 중지</button>
+      <button class="btn btn-start" id="startBtn">녹화 시작</button>
+      <button class="btn btn-export" id="exportBtn">데이터 보기</button>
+    </div>
   </div>
+  <script src="floating.js"></script>
 </body>
 </html>

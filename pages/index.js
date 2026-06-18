@@ -50,4 +50,8 @@ document.getElementById('exportWacz').addEventListener('click', async () => {
   a.click();
 });
 
+document.getElementById('openPlayer').addEventListener('click', () => {
+  window.open('player.html', '_blank');
+});
+
 loadData();

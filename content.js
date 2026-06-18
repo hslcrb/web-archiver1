@@ -6,7 +6,7 @@
     const shadow = root.attachShadow({ mode: 'closed' });
     const iframe = document.createElement('iframe');
     iframe.src = chrome.runtime.getURL('pages/floating.html');
-    iframe.style.cssText = 'position:fixed;bottom:20px;right:20px;width:150px;height:50px;border:none;z-index:2147483647;pointer-events:none;';
+    iframe.style.cssText = 'position:fixed;bottom:20px;right:20px;width:200px;height:auto;border:none;z-index:2147483647;';
     shadow.appendChild(iframe);
     document.body.appendChild(root);
   }
