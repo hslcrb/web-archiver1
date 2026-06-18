@@ -1,20 +1,26 @@
-let currentData = null;
+import { getAllFromDB } from './db.js';
+
+let currentData = {
+  requests: [],
+  snapshots: [],
+  startTime: Date.now()
+};
 
 async function loadData() {
-  chrome.runtime.sendMessage({ action: "STOP_RECORDING" }, (response) => {
-    if (response && response.data) {
-      currentData = response.data;
-      displayData();
-    }
-  });
+  currentData.requests = await getAllFromDB("requests");
+  currentData.snapshots = await getAllFromDB("snapshots");
+  displayData();
 }
 
 function displayData() {
   const info = document.getElementById('sessionInfo');
   const list = document.getElementById('requestList');
   if (!currentData) return;
-  info.innerText = `시작 시간: ${new Date(currentData.startTime).toLocaleString()} | 총 요청: ${currentData.requests.length}개 | 스냅샷: ${currentData.snapshots.length}개`;
-  list.innerHTML = currentData.requests.map(req => `
+  info.innerText = `총 요청: ${currentData.requests.length}개 | 스냅샷: ${currentData.snapshots.length}개`;
+  
+  // 대용량 리스트 렌더링 최적화 (상위 100개만 우선 표시)
+  const displayRequests = currentData.requests.slice(0, 100);
+  list.innerHTML = displayRequests.map(req => `
     <tr>
       <td>${new Date(req.timestamp).toLocaleTimeString()}</td>
       <td>${req.method}</td>
@@ -25,8 +31,8 @@ function displayData() {
 }
 
 document.getElementById('exportZip').addEventListener('click', async () => {
-  if (!currentData) return;
-  const blob = await exportFullZip(currentData);
+  if (currentData.requests.length === 0) return;
+  const blob = await window.exportFullZip(currentData);
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
@@ -35,8 +41,8 @@ document.getElementById('exportZip').addEventListener('click', async () => {
 });
 
 document.getElementById('exportWacz').addEventListener('click', async () => {
-  if (!currentData) return;
-  const blob = await exportWACZ(currentData);
+  if (currentData.requests.length === 0) return;
+  const blob = await window.exportWACZ(currentData);
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;

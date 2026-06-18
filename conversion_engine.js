@@ -37,7 +37,7 @@ function convertSnapshotToLocal(snap, requests) {
   return new XMLSerializer().serializeToString(doc);
 }
 
-async function exportFullZip(currentData) {
+window.exportFullZip = async function(currentData) {
   const zip = new JSZip();
   const resourcesFolder = zip.folder("resources");
 

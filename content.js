@@ -18,7 +18,9 @@
   });
 
   function getFullHTML() {
-    return new XMLSerializer().serializeToString(document);
+    // 너무 큰 HTML은 압축하거나 필요한 부분만 전송하도록 고려 가능하나, 
+    // 일단 IndexedDB로 바로 저장하는 방식이 아니므로 메시지 크기 주의
+    return document.documentElement.outerHTML;
   }
 
   function collectResources() {

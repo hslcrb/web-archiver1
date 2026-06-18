@@ -28,7 +28,7 @@ function generateWARC(requests) {
   return warc;
 }
 
-async function exportWACZ(currentData) {
+window.exportWACZ = async function(currentData) {
   const zip = new JSZip();
   
   // 1. WARC 파일 생성

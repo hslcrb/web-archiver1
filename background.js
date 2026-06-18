@@ -1,33 +1,35 @@
+import { initDB, saveToDB, clearDB, getAllFromDB } from './db.js';
+
 let recording = false;
-let sessionData = {
-  requests: [],
-  snapshots: [],
-  startTime: null
-};
+let requestCount = 0;
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message.action === "START_RECORDING") {
     recording = true;
-    sessionData = { requests: [], snapshots: [], startTime: Date.now() };
-    startDebugger();
-    sendResponse({ status: "started" });
+    requestCount = 0;
+    clearDB().then(() => {
+      startDebugger();
+      sendResponse({ status: "started" });
+    });
+    return true;
   } else if (message.action === "STOP_RECORDING") {
     recording = false;
     stopDebugger();
-    sendResponse({ status: "stopped", data: sessionData });
+    sendResponse({ status: "stopped" });
+    return true;
   } else if (message.action === "GET_STATUS") {
-    sendResponse({ recording, requestCount: sessionData.requests.length });
+    sendResponse({ recording, requestCount });
+    return true;
   } else if (message.action === "SAVE_SNAPSHOT") {
     if (recording) {
-      sessionData.snapshots.push({
+      saveToDB("snapshots", {
         url: sender.tab.url,
         timestamp: Date.now(),
-        html: message.html,
-        resources: message.resources
+        html: message.html
       });
     }
+    return true;
   }
-  return true;
 });
 
 function startDebugger() {
@@ -57,28 +59,36 @@ chrome.debugger.onEvent.addListener((source, method, params) => {
   if (!recording) return;
 
   if (method === "Network.requestWillBeSent") {
-    sessionData.requests.push({
-      tabId: source.tabId,
+    const req = {
       requestId: params.requestId,
       url: params.request.url,
       method: params.request.method,
       headers: params.request.headers,
       timestamp: params.wallTime * 1000,
       type: params.type
-    });
-  } else if (method === "Network.responseReceived") {
-    const req = sessionData.requests.find(r => r.requestId === params.requestId);
-    if (req) {
-      req.response = params.response;
-    }
+    };
+    saveToDB("requests", req);
+    requestCount++;
   } else if (method === "Network.loadingFinished") {
     chrome.debugger.sendCommand(source, "Network.getResponseBody", { requestId: params.requestId }, (result) => {
-      if (chrome.runtime.lastError) return;
-      const req = sessionData.requests.find(r => r.requestId === params.requestId);
-      if (req && result) {
-        req.body = result.body;
-        req.base64Encoded = result.base64Encoded;
-      }
+      if (chrome.runtime.lastError || !result) return;
+      
+      // 기존 데이터를 가져와서 body 추가 후 다시 저장
+      // 최적화를 위해 IndexedDB의 일부분만 업데이트하는 방식이 좋으나 여기서는 put으로 처리
+      const transaction = indexedDB.open("WebArchiverDB").onsuccess = (e) => {
+        const db = e.target.result;
+        const tx = db.transaction("requests", "readwrite");
+        const store = tx.objectStore("requests");
+        const getReq = store.get(params.requestId);
+        getReq.onsuccess = () => {
+          const data = getReq.result;
+          if (data) {
+            data.body = result.body;
+            data.base64Encoded = result.base64Encoded;
+            store.put(data);
+          }
+        };
+      };
     });
   }
 });
